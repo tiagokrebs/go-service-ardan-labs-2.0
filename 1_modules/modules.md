@@ -1,4 +1,4 @@
-### Module mirrors
+## Module mirrors
 
 Estudar a semântica de módulos não se resume a simples necessidade para egenharia de APIs mas também na tomada de decisões relacionadas a privacidade que vão acontecer durante as etapas de projeto e construção.
 
@@ -16,11 +16,12 @@ go env | grep GOCACHE
 GOCACHE="/Users/tiago.krebs/Library/Caches/go-build"
 ```
 
-Definimos o uso de módulos em um projeto através de `go mod init`. É importante utilizar um nome único, diferente de qualquer outro disponível, não apenas localmente mas, se há intenção de compartilhar o projeto com a comunidade Golang, de forma global. Comumente o path do projeto no girhub é utilizado.
+Definimos o uso de módulos em um projeto através de `go mod init`. É importante utilizar um nome único, diferente de qualquer outro disponível, não apenas localmente mas, se há intenção de compartilhar o projeto com a comunidade Golang, de forma global. Comumente o path do projeto no github é utilizado.
 ```
 go mod init github.com/tiagokrebs/go-app-2.0
 ```
-Dessa forma a mecânica de módulos passa a ser o método default do projeto para encontrar sources codes. O arquivo `go.mod` armazena a versão atual do Go, através desse arquivo algumas ferramentas built-in do Go são capazes de ajustar seu comportamento de acordo. 
+Dessa forma a mecânica de módulos passa a ser o método default do projeto para encontrar sources codes. O arquivo `go.mod` armazena a versão atual do Go, através desse arquivo algumas ferramentas built-in do Go são capazes de ajustar seu comportamento de acordo.  
+É necessário ficar atento a módulos cuja versão major do projeto compõem o nome, ex: `github.com/dimfeld/httptreemux/v5`. Essa é uma técnica comum utilizada em projetos que já utilizavam versionamento através de tags antes mesmo do suporte oficial a múdulos em Go.
 
 Ao importar packages esse arquivo precisa ser atualizado com o nome do módulo e versão, fazemos isso através de `go mod tidy`. A escolha da versão cabe ao MVS.
 ```
@@ -80,4 +81,31 @@ GONOPROXY="me.gitlab.com"
 ```
 Nesse exemplo todo source iniciando com `me.gitlab.com` será importado diretamente. Dessa forma código prioritário pode ser importado diretamente de um endpoint privado. Esse comportamento também pode ser criado diretamente no Athens ou JfrogArtifactory.
 
-### MVS algorithm
+
+## Minimal Version Selection (MVS) algorithm
+
+A seleção da versão de um módulo importado de forma direta cabe ao MVS porém importações indiretas (dependências de dependências) precisam ser consideradas. Considerando que é possível que um módulo dependa de um submódulo cuja a versão é diferente da mais atual no Module Mirror a versão registrada no `go.mod` no módulo pai é utilizada.  
+Inicialmente esse parece um comportamento óbvio porém cabe lembrar que alguns gerenciadores de pacotes tem um comportamento diferente, obtendo a versão atual de submódulos, possivelmente interferindo na consistência do módulo pai.
+
+Caso múltiplos módulos pai dependam de um mesmo submódulo porém de versões diferentes a maior entre eles é escolhida.
+
+Caso a versão mais recente de um submódulo seja removida do projeto porém ainda exista a dependência do mesmo em versão anterior o MVS mantém a maior versão selecionada ateriormente, não realizando o downgrade.
+
+É possível fazer bypass do comportamento do MVS utilizando `go get`. É ainda mais importante garantir a consistência do projeto através de testes nesse caso.
+
+
+## Checksum database
+
+O arquivo `go.sum` é utilizado para garantir a consistência do código importado dos módulos, por exemplo em casos de alterações backported.
+
+Ao realizar `go mod tidy` e obter a resposta do Module Mirror o MVS armazena os hash codes do arquivo `go.sum`, esse é o resultado da consulta no Checksum Database (serviço atrelado ao Module Mirror que armazena os hash codes de cada módulo de acordo com a versão) apenas na primeira vez em que o módulo é obtido.  
+Ao obter um módulo novamente os hash codes do mesmo são comparados com os gerados anteriormente, caso os hash codes gerados localmente sejam os mesmos o módulo é importado de acordo.
+
+Novamente há um problema essencial de privacidade nessa ação uma vez que o Checksum Database também é um serviço administrado pelo Google. Como solução, assim como `GONOPROXY` podemos utilizar `GONOSUMDB` para não utilizarmos um endpoint privado. A variável `GOPRIVATE` pode ser utilizada para setar ambas as anteriores.
+
+
+## Vendoring
+
+Vendoring não é obrigatório porém altamente recomendado, resume-se em armazenar localmente o source code de todos os módulos do projeto. Para utilizar vendoring a cada `go mod tidy` utilizamos `go mod vendor`. a pasta `vendor` é criada no projeto e o cache do `GOPATH` não é mais necessário para o projeto.
+
+Ter acesso local ao source dos módulos traz vantagens como possibilidade debug, teste e correção de bugs.
