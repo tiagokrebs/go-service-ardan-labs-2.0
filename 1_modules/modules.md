@@ -64,7 +64,7 @@ tree /Users/tiago.krebs/go/pkg/mod/github.com/
         ...
 ```
 
-Os imports são realizados com base na variável de ambiente `GOPROXY`. O proxy server, também conhecido como module mirror, é o endpoit adminstrado pelo Google que realiza o serviço de procura e download dos módulos importados. A diretiva `direct` é uma espécie dee fallback caso o mirror não possua o módulo cacheado.
+Os imports são realizados com base na variável de ambiente `GOPROXY`. O proxy server, também conhecido como module mirror, é o endpoit adminstrado pelo Google que realiza o serviço de procura e download dos módulos importados. A diretiva `direct` é uma espécie de fallback caso o mirror não possua o módulo cacheado.
 ```
 go env | grep GOPROXY
 GOPROXY="https://proxy.golang.org,direct"
@@ -78,6 +78,6 @@ A variável de ambiente `GONOPROXY` define quais módulos não devem ser obtidos
 go env | grep GONOPROXY 
 GONOPROXY="me.gitlab.com"
 ```
-Nesse exemplo todo source iniciando com `me.gitlab.com` será importado diretamente. Dessa forma código prioritário pode ser importado diretamente de um endpoint prioritário. Esse comportamento também pode ser criado diretamente no Athens ou JfrogArtifactory.
+Nesse exemplo todo source iniciando com `me.gitlab.com` será importado diretamente. Dessa forma código prioritário pode ser importado diretamente de um endpoint privado. Esse comportamento também pode ser criado diretamente no Athens ou JfrogArtifactory.
 
 ### MVS algorithm
