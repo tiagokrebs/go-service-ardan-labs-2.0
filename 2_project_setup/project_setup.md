@@ -1,3 +1,5 @@
+A implementação de todos os conceitos desse módulo podem ser encontradas [aqui](https://github.com/tiagokrebs/go-app-2.0/blob/main/app/sales-api/main.go).
+
 ### Project setup
 
 Estrutura de camadas sugerida:
@@ -28,3 +30,13 @@ Definir o propósito dos logs deve ser uma das primeiras etapas do projeto.
 - Todo parâmetro deve permitir alteração via flags em linha de comando (--help)
 - Todo parâmetro/override deve ser printado para garantir consistência
 - Omitir log de parâmetros críticos como chaves e senhas é crítico
+
+
+### Debugging amd metrics
+
+- É possível obter da standard library métodos para disponibilizar valores de debug como métricas, através de uma rota específica. Importando `expvar` e `net/http/pprof` para esse fim não há adição de custo/latência na aplicação.
+- O pacote `divan/expvarmon` é uma ferramenta para análise desses endpoints de debug quando coleta de métricas via Prometheus ou algum datadog não é necessário ou viável.
+
+
+### Shutdown and Signaling
+- Receber sinais para açõees como shutdown e reload de configuraçõe é necessário, especialmente quando a aplicação recebe uma quantidade significativa de requests ou uma grande quantidade de processamento crítico.
